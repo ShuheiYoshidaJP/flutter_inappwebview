@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
@@ -10,15 +10,20 @@ import 'mime_type_resolver.dart';
 class InAppLocalhostServer {
   bool _started = false;
   HttpServer? _server;
+  String _scheme = 'http';
+  String _host = 'localhost';
   int _port = 8080;
 
-  InAppLocalhostServer({int port = 8080}) {
+  InAppLocalhostServer(
+      {String scheme = 'http', String host = 'localhost', int port = 8080}) {
+    this._scheme = scheme;
+    this._host = host;
     this._port = port;
   }
 
   ///Starts the server on `http://localhost:[port]/`.
   ///
-  ///**NOTE for iOS**: For the iOS Platform, you need to add the `NSAllowsLocalNetworking` key with `true` in the `Info.plist` file (See [ATS Configuration Basics](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW35)):
+  ///**NOTE for iOS**: For the iOS Platform, you need to add the `NSAllowsLocalNetworking` key with `true` in the `Info.plist` file (See [ATS Configuration Basics]($_schemes://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW35)):
   ///```xml
   ///<key>NSAppTransportSecurity</key>
   ///<dict>
@@ -29,7 +34,7 @@ class InAppLocalhostServer {
   ///The `NSAllowsLocalNetworking` key is available since **iOS 10**.
   Future<void> start() async {
     if (this._started) {
-      throw Exception('Server already started on http://localhost:$_port');
+      throw Exception('Server already started on $_scheme://$_host:$_port');
     }
     this._started = true;
 
@@ -37,7 +42,7 @@ class InAppLocalhostServer {
 
     runZonedGuarded(() {
       HttpServer.bind('127.0.0.1', _port).then((server) {
-        print('Server running on http://localhost:' + _port.toString());
+        print('Server running on $_scheme://$_host:' + _port.toString());
 
         this._server = server;
 
@@ -84,7 +89,7 @@ class InAppLocalhostServer {
       return;
     }
     await this._server!.close(force: true);
-    print('Server running on http://localhost:$_port closed');
+    print('Server running on $_scheme://$_host:$_port closed');
     this._started = false;
     this._server = null;
   }
